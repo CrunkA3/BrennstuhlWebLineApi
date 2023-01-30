@@ -1,0 +1,12 @@
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\bin\Debug\net7.0\BrennstuhlWebLineApi.deps.json
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\bin\Debug\net7.0\BrennstuhlWebLineApi.dll
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\bin\Debug\net7.0\BrennstuhlWebLineApi.pdb
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\obj\Debug\net7.0\BrennstuhlWebLineApi.csproj.AssemblyReference.cache
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\obj\Debug\net7.0\BrennstuhlWebLineApi.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\obj\Debug\net7.0\BrennstuhlWebLineApi.AssemblyInfoInputs.cache
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\obj\Debug\net7.0\BrennstuhlWebLineApi.AssemblyInfo.cs
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\obj\Debug\net7.0\BrennstuhlWebLineApi.csproj.CoreCompileInputs.cache
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\obj\Debug\net7.0\BrennstuhlWebLineApi.dll
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\obj\Debug\net7.0\refint\BrennstuhlWebLineApi.dll
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\obj\Debug\net7.0\BrennstuhlWebLineApi.pdb
+C:\Users\micha\source\repos\CrunkA3\BrennstuhlWebLineApi\BrennstuhlWebLineApi\obj\Debug\net7.0\ref\BrennstuhlWebLineApi.dll
