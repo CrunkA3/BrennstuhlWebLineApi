@@ -18,6 +18,9 @@ public class Device : IDisposable
     private DigestAuthenticationHandler? _httpClientHandler;
     private HttpClient? _webClient;
 
+    private static TimeSpan MinRequestTimeSpan = TimeSpan.FromMilliseconds(2100);
+    private DateTime _lastRequest = DateTime.Now;
+
     private Device(byte[] buffer)
     {
         using var ms = new MemoryStream(buffer);
@@ -80,6 +83,12 @@ public class Device : IDisposable
         _webClient ??= new HttpClient(_httpClientHandler) { BaseAddress = BaseUri };
 
         var deviceStateRequestData = new FormUrlEncodedContent(deviceStateRequestValueCollection);
+
+        var timeSinceLastRequest = DateTime.Now - _lastRequest;
+        Console.WriteLine(timeSinceLastRequest);
+        if (timeSinceLastRequest < MinRequestTimeSpan) await Task.Delay(MinRequestTimeSpan - timeSinceLastRequest);
+        _lastRequest = DateTime.Now;
+
         var deviceStateResponse = await _webClient.PostAsync("cgi/getJsonData", deviceStateRequestData);
         var responseHeaders = deviceStateResponse.Content.Headers;
         deviceStateResponse.EnsureSuccessStatusCode();

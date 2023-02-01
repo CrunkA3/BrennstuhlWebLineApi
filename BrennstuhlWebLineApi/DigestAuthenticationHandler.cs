@@ -54,14 +54,16 @@ public class DigestAuthenticationHandler : DelegatingHandler
         var path = requestUri.PathAndQuery;
 
         _nc = _nc + 1;
+        _cnonce = new Random().Next(1234500, 99999999).ToString();
+        _cnonceDate = DateTime.Now;
 
         var ha1 = CalculateMd5Hash(string.Format("{0}:{1}:{2}", credential.UserName, _realm, credential.Password));
         var ha2 = CalculateMd5Hash(string.Format("{0}:{1}", method, path));
         var digestResponse =
-            CalculateMd5Hash(string.Format("{0}:{1}:{2:00000000}:{3}:{4}:{5}", ha1, _nonce, _nc, _cnonce, _qop, ha2));
+            CalculateMd5Hash(string.Format("{0}:{1}:{2:X8}:{3}:{4}:{5}", ha1, _nonce, _nc, _cnonce, _qop, ha2));
 
         var result = string.Format("username=\"{0}\", realm=\"{1}\", nonce=\"{2}\", uri=\"{3}\", " +
-            "algorithm=MD5, response=\"{4}\", opaque=\"{5}\", qop={6}, nc={7:00000000}, cnonce=\"{8}\"",
+            "algorithm=MD5, response=\"{4}\", opaque=\"{5}\", qop={6}, nc={7:X8}, cnonce=\"{8}\"",
             credential.UserName, _realm, _nonce, path, digestResponse, _opaque, _qop, _nc, _cnonce);
 
         return result;
@@ -79,7 +81,8 @@ public class DigestAuthenticationHandler : DelegatingHandler
             DateTime.Now.Subtract(_cnonceDate) < TimeSpan.FromHours(1) &&
             credential != null)
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Digest", GetDigestHeader(request.RequestUri ?? new Uri("/"), credential, request.Method.ToString()));
+            var digestHeader = GetDigestHeader(request.RequestUri ?? new Uri("/"), credential, request.Method.ToString());
+            request.Headers.Authorization = new AuthenticationHeaderValue("Digest", digestHeader);
         }
 
         var response = await base.SendAsync(request, cancellationToken);
@@ -98,11 +101,12 @@ public class DigestAuthenticationHandler : DelegatingHandler
             _opaque = GetHeaderParameter("opaque", firstAuthHeader.Parameter);
 
             _nc = 0;
-            _cnonce = new Random().Next(123400, 9999999).ToString();
-            _cnonceDate = DateTime.Now;
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Digest", GetDigestHeader(request.RequestUri ?? new Uri("/"), credential, request.Method.ToString()));
-            return await base.SendAsync(request, cancellationToken);
+            var digestHeader = GetDigestHeader(request.RequestUri ?? new Uri("/"), credential, request.Method.ToString());
+            request.Headers.Authorization = new AuthenticationHeaderValue("Digest", digestHeader);
+            response = await base.SendAsync(request, cancellationToken);
+
+            authHeader = response.Headers.WwwAuthenticate;
         }
 
         return response;
