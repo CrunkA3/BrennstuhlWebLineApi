@@ -1,10 +1,6 @@
 ﻿using System.Net;
 using BrennstuhlWebLineApi;
 
-
-Console.WriteLine("Hello, World!");
-
-
 await BrennstuhlWebLineFinder.FindAsync(async m =>
                                         {
                                             Console.WriteLine(m.IpAddress.ToString());
