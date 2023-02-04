@@ -23,13 +23,17 @@ public static class BrennstuhlWebLineFinder
         return new IPAddress(broadcastIPBytes);
     }
 
-    public static Task FindAsync(Action<Device> onFound)
+    public static Task<IEnumerable<Device>> FindAsync()
+    {
+        return FindAsync(onFound: default);
+    }
+    public static Task<IEnumerable<Device>> FindAsync(Action<Device>? onFound)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         return FindAsync(onFound, cancellationTokenSource.Token);
     }
 
-    public static async Task FindAsync(Action<Device> onFound, CancellationToken cancellationToken)
+    public static async Task<IEnumerable<Device>> FindAsync(Action<Device>? onFound, CancellationToken cancellationToken)
     {
         var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
         var networkInterfacesOnline = networkInterfaces
@@ -37,6 +41,11 @@ public static class BrennstuhlWebLineFinder
             .ToArray();
 
         var foundDevices = new ConcurrentDictionary<string, Device>();
+        var adressTasks = new List<Task>();
+        Action<Device> onDeviceFound = (device) =>
+            {
+                if (foundDevices.TryAdd(Convert.ToHexString(device.MacAddress), device)) onFound?.Invoke(device);
+            };
 
         foreach (var networkInterface in networkInterfacesOnline)
         {
@@ -46,33 +55,49 @@ public static class BrennstuhlWebLineFinder
 
             foreach (var address in addresses)
             {
-                var broadcastIPAddress = GetBroadcastIP(address.Address, address.IPv4Mask);
-
-                using var client = new UdpClient(0);
-                client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 10);
-                client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
-
-                try
-                {
-                    await client.SendAsync(searchBytes, new IPEndPoint(broadcastIPAddress, searchPort), cancellationToken);
-
-                    while (!cancellationToken.IsCancellationRequested)
-                    {
-                        var data = await client.ReceiveAsync(cancellationToken);
-                        var device = Device.ParseFromByteArray(data.Buffer);
-
-                        if (foundDevices.TryAdd(Convert.ToHexString(device.MacAddress), device))
-                        {
-                            onFound.Invoke(device);
-                        }
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
+                var task = FindAsync(onDeviceFound, address, cancellationToken);
+                adressTasks.Add(task);
             }
         }
 
+
+        try
+        {
+            await Task.WhenAll(adressTasks);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception)
+        {
+            throw;
+        }
+
+        return foundDevices.Values;
+    }
+
+
+    private static async Task FindAsync(Action<Device> onFound, UnicastIPAddressInformation addressInformation, CancellationToken cancellationToken)
+    {
+        var broadcastIPAddress = GetBroadcastIP(addressInformation.Address, addressInformation.IPv4Mask);
+
+        using var client = new UdpClient(0);
+        client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 10);
+        client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
+
+        await client.SendAsync(searchBytes, new IPEndPoint(broadcastIPAddress, searchPort), cancellationToken);
+
+        try
+        {
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var data = await client.ReceiveAsync(cancellationToken);
+                var device = Device.ParseFromByteArray(data.Buffer);
+                onFound.Invoke(device);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
     }
 }

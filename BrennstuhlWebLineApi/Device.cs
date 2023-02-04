@@ -85,7 +85,6 @@ public class Device : IDisposable
         var deviceStateRequestData = new FormUrlEncodedContent(deviceStateRequestValueCollection);
 
         var timeSinceLastRequest = DateTime.Now - _lastRequest;
-        Console.WriteLine(timeSinceLastRequest);
         if (timeSinceLastRequest < MinRequestTimeSpan) await Task.Delay(MinRequestTimeSpan - timeSinceLastRequest);
         _lastRequest = DateTime.Now;
 
