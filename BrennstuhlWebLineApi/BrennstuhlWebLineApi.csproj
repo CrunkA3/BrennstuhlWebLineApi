@@ -7,6 +7,23 @@
     <PackageId>CrunkA3.BrennstuhlWebLineApi</PackageId>
     <Version>1.0.0</Version>
     <Authors>CrunkA3</Authors>
+    <Title>BrennstuhlWebLineApi</Title>
+    <Description>read and control a Brennstuhl Premium-Web-Line V3</Description>
+    <Copyright>Michael Rohrhirsch 2023</Copyright>
+    <PackageProjectUrl>https://github.com/CrunkA3/BrennstuhlWebLineApi</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/CrunkA3/BrennstuhlWebLineApi.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>api</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IncludeSymbols>False</IncludeSymbols>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
