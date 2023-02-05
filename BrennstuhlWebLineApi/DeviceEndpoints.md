@@ -1,31 +1,31 @@
 # Device Endpoints
 
 * [ ] getJsonData
-      - [x] bsHeader
-      - [x] bsMain
-      - [x] bsHistory
-      - [x] bsScheduler
-      - [x] bsState
-      - [x] bsSetSwitch
-      - [x] bsSysSet
-      - [x] bsDateTime
-      - [ ] bsPower
-      - [ ] bsLAN
-      - [ ] bsEmail
-      - [ ] bsWatchdog
-      - [ ] bsStandby
-      - [ ] bsWebserver
-      - [ ] bsSnmp
-      - [ ] bsSyslog
-      - [ ] bsUPnP
-      - [ ] bsFtp
-      - [ ] bsAcl
-      - [ ] bsFilesystem
-      - [ ] bsSaveRestore
-      - [ ] bsFwUpd
-      - [ ] bsFsUpd
-      - [ ] bsUser
-      - [ ] bsLogoff
+    - [x] bsHeader
+    - [x] bsMain
+    - [x] bsHistory
+    - [x] bsScheduler
+    - [x] bsState
+    - [x] bsSetSwitch
+    - [x] bsSysSet
+    - [x] bsDateTime
+    - [ ] bsPower
+    - [ ] bsLAN
+    - [ ] bsEmail
+    - [ ] bsWatchdog
+    - [ ] bsStandby
+    - [ ] bsWebserver
+    - [ ] bsSnmp
+    - [ ] bsSyslog
+    - [ ] bsUPnP
+    - [ ] bsFtp
+    - [ ] bsAcl
+    - [ ] bsFilesystem
+    - [ ] bsSaveRestore
+    - [ ] bsFwUpd
+    - [ ] bsFsUpd
+    - [ ] bsUser
+    - [ ] bsLogoff
 * [ ] logoff
 * [ ] checkAcc
 * [ ] setUser
