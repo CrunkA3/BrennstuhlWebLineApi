@@ -18,7 +18,7 @@ public class Device : IDisposable
     private DigestAuthenticationHandler? _httpClientHandler;
     private HttpClient? _webClient;
 
-    private static TimeSpan MinRequestTimeSpan = TimeSpan.FromMilliseconds(2100);
+    private static TimeSpan MinRequestTimeSpan = TimeSpan.FromMilliseconds(2200);
     private DateTime _lastRequest = DateTime.Now;
 
     private Device(byte[] buffer)
@@ -55,103 +55,14 @@ public class Device : IDisposable
     }
 
 
-    public Task<string> GetMainInformationAsync()
-    {
-        var deviceStateRequestValueCollection = new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("json", "on"),
-            new KeyValuePair<string, string>("panel", "bsMain"),
-        };
-
-        return GetInformationAsync(deviceStateRequestValueCollection);
-    }
-
-    public Task<string> GetHeaderInformationAsync()
-    {
-        var deviceStateRequestValueCollection = new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("json", "on"),
-            new KeyValuePair<string, string>("panel", "bsHeader"),
-        };
-
-        return GetInformationAsync(deviceStateRequestValueCollection);
-    }
-
-    public Task<string> GetStateInformationAsync()
-    {
-        var deviceStateRequestValueCollection = new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("json", "on"),
-            new KeyValuePair<string, string>("panel", "bsState")
-        };
-
-        return GetInformationAsync(deviceStateRequestValueCollection);
-    }
-
-    public Task<string> GetSchedulerInformationAsync()
-    {
-        var deviceStateRequestValueCollection = new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("json", "on"),
-            new KeyValuePair<string, string>("panel", "bsScheduler")
-        };
-
-        return GetInformationAsync(deviceStateRequestValueCollection);
-    }
-
-
-    public Task<string> GetSetSwitchInformationAsync()
-    {
-        var deviceStateRequestValueCollection = new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("json", "on"),
-            new KeyValuePair<string, string>("panel", "bsSetSwitch")
-        };
-
-        return GetInformationAsync(deviceStateRequestValueCollection);
-    }
-
-    public Task<string> GetSystemSettingsInformationAsync()
-    {
-        var deviceStateRequestValueCollection = new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("json", "on"),
-            new KeyValuePair<string, string>("panel", "bsSysSet")
-        };
-
-        return GetInformationAsync(deviceStateRequestValueCollection);
-    }
-
-    public Task<string> GetDateTimeSettingsInformationAsync()
-    {
-        var deviceStateRequestValueCollection = new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("json", "on"),
-            new KeyValuePair<string, string>("panel", "bsDateTime")
-        };
-
-        return GetInformationAsync(deviceStateRequestValueCollection);
-    }
-
-
-    /// <summary>
-    /// Toggle a relay
-    /// </summary>
-    /// <param name="relay">Relay-Index (must be 0 or 1)</param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public async Task ToggleRelayAsync(int relay)
-    {
-        if (relay < 0 || relay > 1) throw new ArgumentOutOfRangeException(nameof(relay));
-
-        _webClient ??= EnsureWebClient();
-        await EnsureRequestTimeSpan();
-
-        using var deviceToggleResponse = await _webClient.GetAsync($"cgi/toggleRelay?Rel={relay}");
-        deviceToggleResponse.EnsureSuccessStatusCode();
-    }
-
-
+    public Task<string> GetMainInformationAsync() => GetInformationAsync("bsMain");
+    public Task<string> GetHeaderInformationAsync() => GetInformationAsync("bsHeader");
+    public Task<string> GetHistoryInformationAsync() => GetInformationAsync("bsHistory");
+    public Task<string> GetStateInformationAsync() => GetInformationAsync("bsState");
+    public Task<string> GetSchedulerInformationAsync() => GetInformationAsync("bsScheduler");
+    public Task<string> GetSetSwitchInformationAsync() => GetInformationAsync("bsSetSwitch");
+    public Task<string> GetSystemSettingsInformationAsync() => GetInformationAsync("bsSysSet");
+    public Task<string> GetDateTimeSettingsInformationAsync() => GetInformationAsync("bsDateTime");
 
     public async Task SetSwitchSetAsync(SetSwitchSettings settings)
     {
@@ -201,7 +112,86 @@ public class Device : IDisposable
 
 
 
+    /// <summary>
+    /// Toggle a relay
+    /// </summary>
+    /// <param name="relay">Relay-Index (must be 0 or 1)</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public async Task ToggleRelayAsync(int relay)
+    {
+        if (relay < 0 || relay > 1) throw new ArgumentOutOfRangeException(nameof(relay));
 
+        _webClient ??= EnsureWebClient();
+        await EnsureRequestTimeSpan();
+
+        using var deviceToggleResponse = await _webClient.GetAsync($"cgi/toggleRelay?Rel={relay}");
+        deviceToggleResponse.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>
+    /// Get the states of the relays
+    /// </summary>
+    /// <returns>The states of both relays</returns>
+    public async Task<RelayStates> GetRelayStatesAsync()
+    {
+        _webClient ??= EnsureWebClient();
+        await EnsureRequestTimeSpan();
+
+        using var deviceStateResponse = await _webClient.GetAsync("cgi/getRelays");
+        deviceStateResponse.EnsureSuccessStatusCode();
+
+        var setRelaysResponseContent = await deviceStateResponse.Content.ReadAsStringAsync();
+
+        return new RelayStates(setRelaysResponseContent);
+    }
+
+
+    /// <summary>
+    /// Set relay state
+    /// </summary>
+    /// <param name="relay"></param>
+    /// <param name="state"></param>
+    /// <returns></returns>
+    public async Task SetRelayStateAsync(RelayNumber relay, RelayState state)
+    {
+        _webClient ??= EnsureWebClient();
+        await EnsureRequestTimeSpan();
+
+        using var deviceStateResponse = await _webClient.GetAsync($"cgi/setRelay?Rel={(int)relay}&State={(int)state}");
+        deviceStateResponse.EnsureSuccessStatusCode();
+    }
+
+
+
+    private async Task SetAsync(IEnumerable<KeyValuePair<string, string>> setRequestValueCollection, string setting)
+    {
+        _webClient ??= EnsureWebClient();
+        await EnsureRequestTimeSpan();
+
+        var setRequestData = new FormUrlEncodedContent(setRequestValueCollection);
+
+        using var deviceStateResponse = await _webClient.PostAsync("cgi/set" + setting, setRequestData);
+        deviceStateResponse.EnsureSuccessStatusCode();
+    }
+
+
+
+
+
+
+
+
+    private Task<string> GetInformationAsync(string panel)
+    {
+        var deviceStateRequestValueCollection = new List<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string, string>("json", "on"),
+            new KeyValuePair<string, string>("panel", panel)
+        };
+
+        return GetInformationAsync(deviceStateRequestValueCollection);
+    }
     public async Task<string> GetInformationAsync(IEnumerable<KeyValuePair<string, string>> deviceStateRequestValueCollection)
     {
         _webClient ??= EnsureWebClient();
@@ -216,17 +206,6 @@ public class Device : IDisposable
         return stateContent;
     }
 
-
-    private async Task SetAsync(IEnumerable<KeyValuePair<string, string>> setRequestValueCollection, string setting)
-    {
-        _webClient ??= EnsureWebClient();
-        await EnsureRequestTimeSpan();
-
-        var setRequestData = new FormUrlEncodedContent(setRequestValueCollection);
-
-        using var deviceStateResponse = await _webClient.PostAsync("cgi/set" + setting, setRequestData);
-        deviceStateResponse.EnsureSuccessStatusCode();
-    }
 
 
     private HttpClient EnsureWebClient()
