@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Collections.Concurrent;
+using System.Text;
 
 namespace BrennstuhlWebLineApi;
 
@@ -74,30 +75,34 @@ public static class BrennstuhlWebLineFinder
         return foundDevices.Values;
     }
 
-
     private static async Task FindAsync(Action<Device> onFound, UnicastIPAddressInformation addressInformation, CancellationToken cancellationToken)
     {
         var broadcastIPAddress = GetBroadcastIP(addressInformation.Address, addressInformation.IPv4Mask);
-
-        using var client = new UdpClient(0);
-        client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 10);
-        client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
-
-        await client.SendAsync(searchBytes, new IPEndPoint(broadcastIPAddress, searchPort), cancellationToken);
+        var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        await socket.SendToAsync(searchBytes, SocketFlags.None, new IPEndPoint(broadcastIPAddress, searchPort));
 
         try
         {
 
+            EndPoint responseEndPoint = new IPEndPoint(IPAddress.Any, 0);
             while (!cancellationToken.IsCancellationRequested)
             {
-                var data = await client.ReceiveAsync(cancellationToken);
-                var device = Device.ParseFromByteArray(data.Buffer);
+                byte[] responseBytes = new byte[1024];
+                int responseLength = (await socket.ReceiveFromAsync(responseBytes, SocketFlags.None, responseEndPoint)).ReceivedBytes;
+                string response = Encoding.ASCII.GetString(responseBytes, 0, responseLength);
+
+                var data = responseBytes[..responseLength];
+                var device = Device.ParseFromByteArray(data);
                 onFound.Invoke(device);
             }
         }
         catch (OperationCanceledException)
         {
             return;
+        }
+        finally
+        {
+            socket.Close();
         }
     }
 }
