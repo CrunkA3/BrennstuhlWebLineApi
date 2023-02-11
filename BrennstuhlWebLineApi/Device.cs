@@ -6,11 +6,11 @@ public class Device : IDisposable
 {
 
     public IPAddress IpAddress { get; }
-    public IPAddress SubnetMask { get; }
-    public IPAddress Gateway { get; }
+    public IPAddress? SubnetMask { get; }
+    public IPAddress? Gateway { get; }
     public short HttpPort { get; }
-    public byte[] MacAddress { get; }
-    public string Name { get; }
+    public byte[]? MacAddress { get; }
+    public string? Name { get; }
 
     public Uri BaseUri { get; set; }
     public CredentialCache CredentialCache { get; } = new CredentialCache();
@@ -40,6 +40,14 @@ public class Device : IDisposable
 
         Name = Encoding.UTF8.GetString(br.ReadBytes(64).TakeWhile(m => m != 0).ToArray());
 
+        BaseUri = new Uri("http://" + IpAddress.ToString() + ":" + HttpPort);
+    }
+
+    public Device(IPAddress ipAddress)
+    {
+        IpAddress = ipAddress;
+        HttpPort = 80;
+        
         BaseUri = new Uri("http://" + IpAddress.ToString() + ":" + HttpPort);
     }
 

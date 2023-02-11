@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>CrunkA3.BrennstuhlWebLineApi</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>CrunkA3</Authors>
     <Title>BrennstuhlWebLineApi</Title>
     <Description>read and control a Brennstuhl Premium-Web-Line V3</Description>

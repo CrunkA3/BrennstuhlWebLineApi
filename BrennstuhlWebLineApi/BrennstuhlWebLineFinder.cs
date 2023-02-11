@@ -45,7 +45,7 @@ public static class BrennstuhlWebLineFinder
         var adressTasks = new List<Task>();
         Action<Device> onDeviceFound = (device) =>
             {
-                if (foundDevices.TryAdd(Convert.ToHexString(device.MacAddress), device)) onFound?.Invoke(device);
+                if (foundDevices.TryAdd(Convert.ToHexString(device.MacAddress!), device)) onFound?.Invoke(device);
             };
 
         foreach (var networkInterface in networkInterfacesOnline)
